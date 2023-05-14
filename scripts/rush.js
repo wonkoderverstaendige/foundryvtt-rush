@@ -1,6 +1,7 @@
 import Grid from "./grid.js";
 import * as lib from "./lib/lib.js";
 import AStar from "./lib/astar.js";
+import {posToGrid} from "./lib/lib.js";
 
 export const Rush = {
     grid: undefined,
@@ -48,40 +49,57 @@ export const Rush = {
 
         const animations = [];
 
+        this.grid.wipe();
+
+        // token target position
+        const target_token_pos = lib.snapPosToGrid(pos_canvas.x - canvas.scene.grid.size / 2,
+            pos_canvas.y - canvas.scene.grid.size / 2, 1);
+        const target_center_pos = {
+            x: target_token_pos.x + canvas.scene.grid.size / 2,
+            y: target_token_pos.y + canvas.scene.grid.size / 2
+        }
+
+        console.log(`Rush | Target Pos: ${target_token_pos.x}, ${target_token_pos.y}`);
+        console.log(`Rush | Target Center Pos: ${target_center_pos.x}, ${target_center_pos.y}`);
+
+        const gridEnd = lib.posToGrid(pos_canvas.x, pos_canvas.y);
+
+        // reject invalid target positions
+        if (!this.grid.valid(gridEnd.row, gridEnd.col)) return;
+
+        // mark target as occupied? // todo: should be a check!
+        // this.grid.get(gridEnd.row, gridEnd.col).occupied = true;
+
         for (let token of tokens) {
             const Searcher = new AStar(this.grid);
             this.searchers.push(Searcher);
 
-            // token target position
-            const target_token_pos = lib.snapPosToGrid(pos_canvas.x - canvas.scene.grid.size / 2,
-                pos_canvas.y - canvas.scene.grid.size / 2, 1);
-            const target_center_pos = {
-                x: target_token_pos.x + canvas.scene.grid.size / 2,
-                y: target_token_pos.y + canvas.scene.grid.size / 2
-            }
-
-            console.log(`Rush | Target Pos: ${target_token_pos.x}, ${target_token_pos.y}`);
-            console.log(`Rush | Target Center Pos: ${target_center_pos.x}, ${target_center_pos.y}`);
-
             // TODO: Doesn't use center but upper left corner!
             const gridStart = lib.posToGrid(token.document.x + canvas.scene.grid.size / 2,
                 token.document.y + canvas.scene.grid.size / 2);
-            const gridEnd = lib.posToGrid(pos_canvas.x, pos_canvas.y);
-
-            if (!this.grid.valid(gridStart.row, gridStart.col) || !this.grid.valid(gridEnd.row, gridEnd.col)) return;
 
             // check if this would be a valid straight move without wall collisions
             const collision = token.checkCollision(target_center_pos);
+
+            // Mark occupied spots // TODO smarts!
+
+            for (let ot of canvas.tokens.placeables) {
+                const pos = posToGrid(ot.x, ot.y);
+                if (pos.row === gridStart.row && pos.col === gridStart.col) continue;
+                this.grid.get(pos.row, pos.col).occupied = true;
+            }
+
             console.debug(`Rush | Start: ${gridStart.row}, ${gridStart.col} to ${gridEnd.row}, ${gridEnd.col}. Valid path: ${collision ? '❌' : '✔'}`);
-
-
-            //const path = [gridStart, gridEnd];  // {row: 0, col: 1}, {row: 2, col: 1}, {row: 4, col: 3}
             const path = Searcher.search(gridStart, gridEnd);
+
+            // mark stop position as occupied so next in group don't run there
+            const stop = path[path.length-1];
+            stop.occupied = true;
             animations.push(this.animate(token, path));
         }
 
         await Promise.all(animations);
-        this.grid.visualize();
+        // this.grid.visualize();
 
     },
 
@@ -90,8 +108,14 @@ export const Rush = {
             // animate the token
             const targetCell = this.grid.get(position.row, position.col);
             const targetPos = lib.snapPosToGrid(targetCell.center.x, targetCell.center.y);
+            const distance = Math.sqrt((token.x - targetPos.x)**2 + (token.y-targetPos.y)**2);
+
+            // todo: base animation on distance in feet, or generic squares? Must look nice, not be "realistic"
+            const distanceSquares = distance/canvas.scene.grid.size //*canvas.scene.grid.distance; <--feet
+
+            const duration = distanceSquares*200; // ms/square
             await token.document.update({x: targetPos.x - token.w / 2, y: targetPos.y - token.h / 2},
-                {animation: {duration: 600}});
+                {animation: {duration: duration}});
             await CanvasAnimation.getAnimation(token.animationName)?.promise;
         }
     }

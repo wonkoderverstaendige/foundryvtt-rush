@@ -20,6 +20,9 @@ class Cell {
 
         // set up the per-search variables
         this.clean();
+
+        // set up mid-term variables
+        this.wipe();
         this.probeNeighborhood();
     }
 
@@ -35,7 +38,7 @@ class Cell {
         this.g = 0;             // Graph score
         this.h = 0;             // Heuristic score
         this.weight = 1;        // cost of traversal here
-        this.occupied = false;  // if grid is occupied. Might allow travel, but prevent ending movement here.
+
 
         this.color = 0xff0000;
         this.alpha = 0.1;
@@ -44,10 +47,10 @@ class Cell {
         // used for weighing travel without overlap
         this.occupancy = [];
     }
-    //
-    // get f () {
-    //     return this.g + this.h;
-    // }
+
+    wipe() {
+        this.occupied = false;  // if grid is occupied. Might allow travel, but prevent ending movement here.
+    }
 
     /**
      * Calculate the reachable neighbors for this cell based on the surrounding grid cells.
@@ -104,8 +107,8 @@ class Cell {
 
         this.label = new PIXI.Text(`${this.row},${this.col}`, CONSTANTS.LABEL_LOC_STYLE);
         this.label.resolution = 2;
-        this.label.x = this.gfx.x + gs*0.40;
-        this.label.y = this.gfx.y + gs*0.40;
+        this.label.x = this.gfx.x + gs*0.30;
+        this.label.y = this.gfx.y + gs*0.30;
         canvas.stage.addChild(this.label);
     }
 
@@ -120,7 +123,7 @@ class Cell {
 
         canvas.stage.removeChild(this.label);
         this.label.destroy();
-        this.label = undefind;
+        this.label = undefined;
 
     }
 
@@ -128,14 +131,12 @@ class Cell {
      * Draw a presentation of the cell state
      */
     draw() {
+        // square
         const gs = canvas.scene.grid.size;
         let color = this.color;
         if (this.blocked) color = 0x0000ff;
         if (this.visited) color += 0xff0000;
-
-        if (this.parent) color += 0x00ff00;
-
-        color = 0xff00ff;
+        if (this.occupied) color += 0x00ff00;
 
         if (!this.gfx) this.paint();
         if (this.gfx?.fill?.color !== color) {
@@ -146,9 +147,11 @@ class Cell {
             this.color = color;
         }
 
-        this.label.text = `${this.row},${this.col}\n${this.f.toFixed(2)}`;
+        this.label.text = `${this.row},${this.col}\nf=${this.f.toFixed(2)}`;
 
         if (!this.__neighbors.length) return;
+
+        // Connectivity markers
         const mid = gs/2;
         for (let neighbor of this.__neighbors) {
             this.gfx.beginFill(0x00aa00, 0.2);
@@ -156,7 +159,7 @@ class Cell {
             const drow = this.row - neighbor.row;
             const dcol = this.col - neighbor.col;
             // console.log(`Rush | Connectivity Marker with drow=${drow}, dcol=${dcol}`);
-            this.gfx.moveTo(mid - dcol * gs * 0.0, mid - drow * gs * 0.0);
+            this.gfx.moveTo(mid - dcol * gs * 0.1, mid - drow * gs * 0.1);
             this.gfx.lineTo(mid - dcol * gs * 0.5, mid - drow * gs * 0.5);
 
             // this.gfx.lineTo(gs/2 - drow * gs * 0.1, gs/2 - drow * gs * 0.4);
@@ -164,9 +167,7 @@ class Cell {
             // this.gfx.lineTo(gs/2 - drow * gs * 0.1, gs/2 - drow * gs * 0.4);
             this.gfx.endFill();
         }
-
     }
-
 }
 
 export default class Grid {
@@ -306,6 +307,9 @@ export default class Grid {
      */
     wipe() {
         console.log('Rush | Wiping grid data.');
+        this.forEach((cell) => {
+            cell.wipe();
+        })
     }
 
     /**

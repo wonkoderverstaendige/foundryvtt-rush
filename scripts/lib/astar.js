@@ -10,7 +10,7 @@ export default class AStar {
      */
     constructor(grid, options = {}) {
         console.log('Rush | Initiating A* Search');
-        // options = mergeObject(options)
+        this.options = options;
         this.grid = grid;
         this.heuristics = {
             'manhattan': this.manhattan,
