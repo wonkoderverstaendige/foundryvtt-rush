@@ -1,0 +1,21 @@
+{
+  "id": "rush",
+  "title": "Rush - Menacing Monster Mob Movement Module",
+  "description": "Menacingly Move Monstrous Mobs.",
+  "authors": [
+    {
+      "name": "wonko"
+    }
+  ],
+  "version": "0.0.1",
+  "compatibility": {
+    "minimum": "9",
+    "verified": "10"
+  },
+  "esmodules": [
+    "/scripts/module.js"
+  ],
+  "url": "https://gitlab.com/reichler/rush",
+  "manifest": "https://gitlab.com/reichler/rush/releases/latest/download/module.json",
+  "download": "https://gitlab.com/reichler/rush/releases/latest/download/0.0.1/module.zip"
+}

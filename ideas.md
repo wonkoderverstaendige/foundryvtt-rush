@@ -1,0 +1,13 @@
+- non-grid based movement
+- movement heuristics dependent on token actor intelligence/type etc.
+  - smarter enemies try to not get in each other's way, optimize encircle or cut off exits
+  - dumb enemies block each other, get stuck, take inefficient paths
+- prevent simultaneous occupation during movement
+  - insert ghost stops to let token pass
+- ease movement
+- order determined by initiative, speed and distance from target
+- adjust movement animation based on speed
+- alternative search algorithms (A*, Θ*, SIPP)
+- look at extended animations
+  - rotate in movement direction
+  - movement styles (sharp, smooth, fluttery, stomping...)
