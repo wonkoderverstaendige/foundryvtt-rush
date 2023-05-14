@@ -13,9 +13,8 @@ class Cell {
         }
         this.blocked = blocked;
 
-        this.color = 0xff0000;
-        this.alpha = 0.1;
         this.gfx = undefined;
+        this.label = undefined;
 
         this.__neighbors = undefined;
 
@@ -37,6 +36,9 @@ class Cell {
         this.h = 0;             // Heuristic score
         this.weight = 1;        // cost of traversal here
         this.occupied = false;  // if grid is occupied. Might allow travel, but prevent ending movement here.
+
+        this.color = 0xff0000;
+        this.alpha = 0.1;
 
         // list of time-step keyed occupancy events
         // used for weighing travel without overlap
@@ -60,27 +62,26 @@ class Cell {
 
                 // ignore self
                 if (!(a || b)) continue;
-                //const neighbor = this.grid.get(this.row+a, this.col+b;
-                const neighbor = {row: this.row + a, col: this.col + b}
-                if (neighbor.row < 0 || neighbor.row >= this.grid.nrows
-                    || neighbor.col < 0 || neighbor.col >= this.grid.ncols) continue;
+                //const neighborLoc = this.grid.get(this.row+a, this.col+b;
+                const neighborLoc = {row: this.row + a, col: this.col + b}
+                if (neighborLoc.row < 0 || neighborLoc.row >= this.grid.nrows
+                    || neighborLoc.col < 0 || neighborLoc.col >= this.grid.ncols) continue;
 
-                mergeObject(neighbor, gridToPos(neighbor));
+                mergeObject(neighborLoc, gridToPos(neighborLoc));
 
                 // check if cell can be reached
                 // if (this.row === 0 && this.col === 0) {
                 //     const sx = canvas.scene.dimensions.sceneX;
                 //     const sy = canvas.scene.dimensions.sceneY;
-                //     console.log(`Rush | ${this.center.x-sx}, ${this.center.y-sy} -> ${neighbor.x-sx}, ${neighbor.y-sy}`);
+                //     console.log(`Rush | ${this.center.x-sx}, ${this.center.y-sy} -> ${neighborLoc.x-sx}, ${neighborLoc.y-sy}`);
                 // }
-                const ray = new Ray(this.center, neighbor);
+                const ray = new Ray(this.center, neighborLoc);
                 const collision = canvas.walls.checkCollision(ray, {type: 'move', mode: 'any'});
                 if (!collision) {
-                    this.__neighbors.push(neighbor);
+                    this.__neighbors.push(neighborLoc);
                 }
             }
         }
-        this.dirty = true;
     }
 
     get neighbors() {
@@ -94,11 +95,18 @@ class Cell {
         // TODO: We should clone a template square, instead of making a new one each time.
         // Especially when we have large maps, we end with >100k graphics objects...
         // Better yet, this should just be a few RenderTextures we draw into a single time each.
+        const gs = canvas.scene.grid.size;
         if (this.gfx) this.erase();
         this.gfx = new PIXI.Graphics();
-        this.gfx.x = canvas.scene.dimensions.sceneX + this.col * canvas.scene.grid.size;
-        this.gfx.y = canvas.scene.dimensions.sceneY + this.row * canvas.scene.grid.size;
+        this.gfx.x = canvas.scene.dimensions.sceneX + this.col * gs;
+        this.gfx.y = canvas.scene.dimensions.sceneY + this.row * gs;
         canvas.stage.addChild(this.gfx);
+
+        this.label = new PIXI.Text(`${this.row},${this.col}`, CONSTANTS.LABEL_LOC_STYLE);
+        this.label.resolution = 2;
+        this.label.x = this.gfx.x + gs*0.40;
+        this.label.y = this.gfx.y + gs*0.40;
+        canvas.stage.addChild(this.label);
     }
 
     /**
@@ -108,6 +116,12 @@ class Cell {
     erase() {
         canvas.stage.removeChild(this.gfx);
         this.gfx.destroy();
+        this.gfx = undefined;
+
+        canvas.stage.removeChild(this.label);
+        this.label.destroy();
+        this.label = undefind;
+
     }
 
     /**
@@ -115,14 +129,24 @@ class Cell {
      */
     draw() {
         const gs = canvas.scene.grid.size;
+        let color = this.color;
+        if (this.blocked) color = 0x0000ff;
+        if (this.visited) color += 0xff0000;
+
+        if (this.parent) color += 0x00ff00;
+
+        color = 0xff00ff;
 
         if (!this.gfx) this.paint();
-        if (this.gfx?.fill?.color !== this.color) {
+        if (this.gfx?.fill?.color !== color) {
             this.gfx.clear();
-            this.gfx.beginFill(this.color, this.alpha);
+            this.gfx.beginFill(color, this.alpha);
             this.gfx.drawRect(0, 0, gs, gs);
             this.gfx.endFill();
+            this.color = color;
         }
+
+        this.label.text = `${this.row},${this.col}\n${this.f.toFixed(2)}`;
 
         if (!this.__neighbors.length) return;
         const mid = gs/2;
@@ -154,9 +178,6 @@ export default class Grid {
     constructor(rows, cols) {
         this.__nrows = Math.abs(rows);
         this.__ncols = Math.abs(cols);
-        this.f = 0;
-        this.g = 0;
-        this.h = 0;
 
         this.init();
     }
@@ -278,6 +299,13 @@ export default class Grid {
         this.forEach((cell) => {
             cell.clean();
         })
+    }
+
+    /**
+     * Resetting all grid data, including per-search and between-search values for all instantiated cells
+     */
+    wipe() {
+        console.log('Rush | Wiping grid data.');
     }
 
     /**

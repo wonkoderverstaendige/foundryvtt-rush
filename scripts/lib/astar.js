@@ -32,22 +32,22 @@ export default class AStar {
      * @param closeIn Try to get as close as possible even if exact target is unreachable
      */
     search(start, end, heuristic = 'octile', closeIn = true) {
+        this.grid.clean();
         this.start = this.grid.get(start.row, start.col);
         this.end = this.grid.get(end.row, end.col);
-        this.grid.clean();
 
         // choose our heuristic function
         const heuristicFun = this.heuristics[heuristic];
 
-        this.start.dirty = true;
         this.start.h = heuristicFun(this.start, this.end);
-        console.log(`Rush | Searching from ${this.start.row},${this.start.col} to ${this.end.row}, ${this.end.col}. Start H=${this.start.h}`);
+        console.log(`Rush | Searching from ${this.start.row},${this.start.col} to ${this.end.row}, ${this.end.col}.`);
 
         this.heap.push(this.start);
 
         let closestNode = this.start;  // node to end on if we can't quite get there
-
+        let step = 0;
         while (this.heap.size > 0) {
+            step ++;
             // console.log(`Rush | Heap size = ${this.heap.size}`);
             // get next node to process
             let currentNode = this.heap.pop();
@@ -56,6 +56,7 @@ export default class AStar {
             // termination test for complete path
             if (currentNode === this.end) {
                 // console.log(`Rush | Current cell is end. Completed path.`);
+                console.log(`Rush | Search terminated after ${step} steps at End.`)
                 return this.pathFrom(currentNode);
             }
 
@@ -88,7 +89,7 @@ export default class AStar {
                     neighbor.parent = currentNode;
                     neighbor.h = neighbor.h || heuristicFun(neighbor, end);
                     neighbor.g = gScore;
-                    neighbor.dirty = true;
+                    neighbor.f = neighbor.g + neighbor.h;
 
                     // check if neighbor is closer, or equally close but has cheaper path
                     // this will be useful for surrounding tokens later on
@@ -107,6 +108,8 @@ export default class AStar {
 
             });
         }
+
+        console.log(`Rush | Search terminated after ${step} steps at closest.`)
         if (closeIn) {
             return this.pathFrom(closestNode);
         }

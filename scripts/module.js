@@ -6,7 +6,7 @@ Hooks.once('init', function () {
 })
 
 Hooks.on('ready', async function () {
-    ui.notifications.info("Rushing!", { console: true });
+    console.log('Rush | Begin Initialization...');
     window.Rush.initialize();
 
     Hooks.on('createWall', () => { window.Rush.grid.reset() });
