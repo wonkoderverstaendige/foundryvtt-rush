@@ -20,8 +20,6 @@ variables:
 publish_artifacts:
   stage: prepare-release
   image: alpine:latest
-  needs:
-    - compile
   before_script:
     - apk update
     - apk add zip curl
