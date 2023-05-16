@@ -96,10 +96,9 @@ export const Rush = {
             // check if this would be a valid straight move without wall collisions
             const collision = token.checkCollision(target_center_pos);
 
-            // Mark occupied spots // TODO smarts!
-
-            for (let ot of canvas.tokens.placeables) {
-                const pos = posToGrid(ot.x, ot.y);
+            // Mark cells occupied by a token // TODO smarts!
+            for (let tn of canvas.tokens.placeables) {
+                const pos = posToGrid(tn.x, tn.y);
                 if (pos.row === gridStart.row && pos.col === gridStart.col) continue;
                 // Rush.debug(false, `Occupied: ${pos.row}, ${pos.col}.`);
                 this.grid.get(pos.row, pos.col).occupied = true;
@@ -114,13 +113,25 @@ export const Rush = {
             animations.push(this.animate(token, path));
         }
 
+        let debug = game.modules.get('_dev-mode')?.api?.getPackageDebugValue(this.ID);
+        if (debug) {
+            this.grid.visualize();
+        }
+
         await Promise.all(animations);
-        // this.grid.visualize();
 
     },
 
     async animate(token, path) {
         for (let position of path) {
+            // do some hand-waving for the speed.
+            // check if walking speed, flying speed, burrow speed, take the maximum?
+            // else use a 30 ft speed as default
+            // todo: make speed part of popup dialog, i.e. move in pack or separate by speed
+            const actor = token.actor;
+            const speeds = Object.values(actor.system.attributes.movement).filter((v) => typeof(v) == 'number')
+            const moveSpeed = Math.max(...speeds);
+
             // animate the token
             const targetCell = this.grid.get(position.row, position.col);
             const targetPos = lib.snapPosToGrid(targetCell.center.x, targetCell.center.y);
@@ -129,11 +140,13 @@ export const Rush = {
             // todo: base animation on distance in feet, or generic squares? Must look nice, not be "realistic"
             const distanceSquares = distance/canvas.scene.grid.size //*canvas.scene.grid.distance; <--feet
 
-            const duration = distanceSquares*200; // ms/square
+            const duration = 150 + distanceSquares * moveSpeed * 5; // ms/square
+            if (token.document.hidden) {
+                await token.document.update({hidden: false});
+            }
             await token.document.update({x: targetPos.x - token.w / 2, y: targetPos.y - token.h / 2},
                 {animation: {duration: duration}});
             await CanvasAnimation.getAnimation(token.animationName)?.promise;
         }
     }
 }
-
