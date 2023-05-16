@@ -13,10 +13,10 @@ export default class AStar {
         this.options = options;
         this.grid = grid;
         this.heuristics = {
-            'manhattan': this.manhattan,
-            'chebyshev': this.chebyshev,
-            'octile': this.octile,
-            'euclidean': this.euclidean
+            'manhattan': AStar.manhattan,
+            'chebyshev': AStar.chebyshev,
+            'octile': AStar.octile,
+            'euclidean': AStar.euclidean
         }
 
         this.heap = new BinaryHeap((node) => {
@@ -124,7 +124,7 @@ export default class AStar {
      * @param simplify
      * @returns {*[]}
      */
-    pathFrom(cell, simplify=true, maxDistance=Infinity) {
+    pathFrom(cell, simplify=false) {
         // console.log(`Rush | Build path from cell ${cell.row},${cell.col}`);
         let current = cell;
         const path = [];
@@ -141,9 +141,8 @@ export default class AStar {
         path.reverse();
 
         // console.log(`Rush | Has Start: ${path.indexOf(this.start)}, Has End: ${path.indexOf(this.end)}`);
-
         if (simplify) {
-            return this.reducePath(path);
+            return AStar.reducePath(path);
         } else {
             return path;
         }
@@ -154,10 +153,26 @@ export default class AStar {
      * check if one-sided walls are passable!
      *
      * @param path Array of steps, start to end
+     * @param maxDistance Maximum distance to allow the path to go. I.e. one movement (or two if dashing)
      * @returns {*[]} Reduced array, start to end
      */
-    reducePath(path) {
+    static reducePath(path, maxDistance=Infinity) {
         const simplePath = [];
+
+        const distances = [];
+        let segDist = 0;
+        for (let i=1; i < path.length; i++) {
+            segDist = AStar.euclidean(path[i-1], path[i]) * canvas.scene.grid.distance;
+            distances.push(segDist);
+        }
+
+        let currentTotal = distances.reduce((a, b) => a+b, 0);
+        while (currentTotal > maxDistance) {
+            console.log(`${currentTotal} max: ${maxDistance}`);
+            distances.pop();
+            path.pop();
+            currentTotal = distances.reduce((a, b) => a+b, 0);
+        }
 
         let current = path.shift();
         simplePath.push(current);
@@ -166,25 +181,32 @@ export default class AStar {
 
         while (path.length) {
             next = path.shift();
-            if (next.occupied) {
-                // Rush.debug(false, `Cell ${next.row}, ${next.col} occupied!`);
-            } else {
-                // Rush.debug(false, `Cell ${next.row}, ${next.col} not Occupied!`);
-            }
+            // if (next.occupied && path.length) {
+            //     Rush.debug(false, `Cell ${next.row}, ${next.col} occupied!`);
+            // } else {
+            //     Rush.debug(false, `Cell ${next.row}, ${next.col} not Occupied!`);
+            // }
             const ray = new Ray(current.center, next.center);
-            if (next.occupied || canvas.walls.checkCollision(ray, {type: 'move', mode: 'any'})) {
-                simplePath.push(previous);
-                current = previous;
+            const collides = canvas.walls.checkCollision(ray, {type: 'move', mode: 'any'});
+            if (next.occupied || collides) {
+                if (!path.length) {
+                    // last item on list. Double check collision, else append.
+                    if (collides) simplePath.push(previous);
+                    simplePath.push(next);
+                } else {
+                    simplePath.push(previous);
+                    current = previous;
+                }
             }
             previous = next;
         }
-        simplePath.push(next);
-        console.log(`Rush | Simplified path of length: ${simplePath.length}`);
-        return simplePath;
+        // simplePath.push(next);
+        Rush.debug(false, `Rush | Simplified path of length: ${simplePath.length}, ${currentTotal} ft.`);
+        return [simplePath, currentTotal];
     }
 
     cost(start, end) {
-        return this.euclidean(start, end) * start.weight;
+        return AStar.euclidean(start, end) * start.weight;
     }
 
     /**
@@ -194,7 +216,7 @@ export default class AStar {
      * @param end
      * @returns {number}
      */
-    manhattan(start, end) {
+    static manhattan(start, end) {
         const dx = Math.abs(start.col - end.col);
         const dy = Math.abs(start.row - end.row);
         return dx + dy;
@@ -210,7 +232,7 @@ export default class AStar {
      * @param D
      * @param D2
      */
-    chebyshev(start, end, D = 1, D2 = 1) {
+    static chebyshev(start, end, D = 1, D2 = 1) {
         const dr = Math.abs(end.row - start.row);
         const dc = Math.abs(end.col - start.col);
 
@@ -226,14 +248,14 @@ export default class AStar {
      * @param D2
      * @returns {number}
      */
-    octile(start, end, D = 1, D2 = Math.sqrt(2)) {
+    static octile(start, end, D = 1, D2 = Math.sqrt(2)) {
         const dr = Math.abs(end.row - start.row);
         const dc = Math.abs(end.col - start.col);
 
         return D * Math.max(dc, dr) + (D2 - D) * Math.min(dc, dr);
     }
 
-    euclidean(start, end) {
+    static euclidean(start, end) {
         const dx = start.col - end.col;
         const dy = start.row - end.row;
 
