@@ -50,6 +50,7 @@ class Cell {
 
     wipe() {
         this.occupied = false;  // if grid is occupied. Might allow travel, but prevent ending movement here.
+        this.onPath = false;
     }
 
     /**
@@ -133,15 +134,22 @@ class Cell {
     draw() {
         // square
         const gs = canvas.scene.grid.size;
-        let color = this.color;
-        if (this.blocked) color = 0x0000ff;
+
+        let alpha = this.alpha;
+        let color = 0x000000;
+        if (this.blocked) color += 0x0000ff;
         if (this.visited) color += 0xff0000;
         if (this.occupied) color += 0x00ff00;
+        if (this.onPath) {
+            color = 0x0000ff;
+            let alpha = 0.5;
+        }
+
 
         if (!this.gfx) this.paint();
         if (this.gfx?.fill?.color !== color) {
             this.gfx.clear();
-            this.gfx.beginFill(color, this.alpha);
+            this.gfx.beginFill(color, alpha);
             this.gfx.drawRect(0, 0, gs, gs);
             this.gfx.endFill();
             this.color = color;

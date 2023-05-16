@@ -124,16 +124,20 @@ export default class AStar {
      * @param simplify
      * @returns {*[]}
      */
-    pathFrom(cell, simplify=true) {
+    pathFrom(cell, simplify=true, maxDistance=Infinity) {
         // console.log(`Rush | Build path from cell ${cell.row},${cell.col}`);
         let current = cell;
         const path = [];
 
         while (current.parent) {
+            current.onPath = true;
             path.push(current);
             current = current.parent;
         }
         path.push(this.start);
+        this.start.onPath = true;
+
+        // have the path go from start->end
         path.reverse();
 
         // console.log(`Rush | Has Start: ${path.indexOf(this.start)}, Has End: ${path.indexOf(this.end)}`);
@@ -162,8 +166,13 @@ export default class AStar {
 
         while (path.length) {
             next = path.shift();
+            if (next.occupied) {
+                // Rush.debug(false, `Cell ${next.row}, ${next.col} occupied!`);
+            } else {
+                // Rush.debug(false, `Cell ${next.row}, ${next.col} not Occupied!`);
+            }
             const ray = new Ray(current.center, next.center);
-            if (canvas.walls.checkCollision(ray, {type: 'move', mode: 'any'})) {
+            if (next.occupied || canvas.walls.checkCollision(ray, {type: 'move', mode: 'any'})) {
                 simplePath.push(previous);
                 current = previous;
             }
