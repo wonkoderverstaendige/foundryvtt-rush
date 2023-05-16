@@ -134,6 +134,7 @@ export const Rush = {
         let [simplePath, totalDistance] = AStar.reducePath(path, 2 * moveSpeed);
         const dash = totalDistance > moveSpeed;
         console.log(`DASH: ${dash}, ${totalDistance}`);
+        console.log(simplePath);
 
         for (let position of simplePath) {
             // animate the token

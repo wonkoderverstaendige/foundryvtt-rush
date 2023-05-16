@@ -172,7 +172,10 @@ export default class AStar {
             distances.pop();
             path.pop();
             currentTotal = distances.reduce((a, b) => a+b, 0);
+            console.log(distances);
         }
+        console.log('LEFTOVER');
+
 
         let current = path.shift();
         simplePath.push(current);
@@ -200,7 +203,7 @@ export default class AStar {
             }
             previous = next;
         }
-        // simplePath.push(next);
+        simplePath.push(next);
         Rush.debug(false, `Rush | Simplified path of length: ${simplePath.length}, ${currentTotal} ft.`);
         return [simplePath, currentTotal];
     }
