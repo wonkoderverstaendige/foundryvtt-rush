@@ -4,6 +4,7 @@ import AStar from "./lib/astar.js";
 import {posToGrid} from "./lib/lib.js";
 
 export const Rush = {
+    ID: 'rush',
     grid: undefined,
 
     initialize() {
@@ -28,6 +29,20 @@ export const Rush = {
 
         console.log('Rush | Initialized.');
         this.searchers = [];
+    },
+
+    log(force, ...args) {
+        const shouldLog = force || game.modules.get('_dev-mode')?.api?.getPackageDebugValue(this.ID);
+        if (shouldLog) {
+            console.log('Rush |', ...args);
+        }
+    },
+
+    debug(force, ...args) {
+        const shouldLog = force || game.modules.get('_dev-mode')?.api?.getPackageDebugValue(this.ID);
+        if (shouldLog) {
+            console.log('\u001b[31mRushDBG |\u001b[0m ', ...args);
+        }
     },
 
     __buildGrid() {
@@ -86,6 +101,7 @@ export const Rush = {
             for (let ot of canvas.tokens.placeables) {
                 const pos = posToGrid(ot.x, ot.y);
                 if (pos.row === gridStart.row && pos.col === gridStart.col) continue;
+                // Rush.debug(false, `Occupied: ${pos.row}, ${pos.col}.`);
                 this.grid.get(pos.row, pos.col).occupied = true;
             }
 
