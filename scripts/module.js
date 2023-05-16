@@ -9,6 +9,7 @@ Hooks.once('devModeReady', ({ registerPackageDebugFlag }) => {
 });
 
 Hooks.on('ready', async function () {
+    if (!game.user.isGM) return;
     console.log('Rush | Begin Initialization...');
     window.Rush.initialize();
 
