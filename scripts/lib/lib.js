@@ -28,7 +28,7 @@ export function snapPosToGrid(x, y, gridSnap = 2) {
  * @returns {{col: number, row: number}}
  */
 export function posToGrid(x, y) {
-    const col = Math.floor((x - canvas.scene.dimensions.sceneY) / canvas.scene.grid.size);
+    const col = Math.floor((x - canvas.scene.dimensions.sceneX) / canvas.scene.grid.size);
     const row = Math.floor((y - canvas.scene.dimensions.sceneY) / canvas.scene.grid.size);
     return {row: row, col: col};
 }

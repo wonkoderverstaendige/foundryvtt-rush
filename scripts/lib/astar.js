@@ -168,13 +168,10 @@ export default class AStar {
 
         let currentTotal = distances.reduce((a, b) => a+b, 0);
         while (currentTotal > maxDistance) {
-            console.log(`${currentTotal} max: ${maxDistance}`);
             distances.pop();
             path.pop();
             currentTotal = distances.reduce((a, b) => a+b, 0);
-            console.log(distances);
         }
-        console.log('LEFTOVER');
 
 
         let current = path.shift();
