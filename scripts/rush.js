@@ -80,7 +80,10 @@ export const Rush = {
         const gridEnd = lib.posToGrid(pos_canvas.x, pos_canvas.y);
 
         // reject invalid target positions
-        if (!this.grid.valid(gridEnd.row, gridEnd.col)) return;
+        if (!this.grid.valid(gridEnd.row, gridEnd.col)) {
+            this.log(false, "Invalid target position!");
+            return;
+        }
 
         // mark target as occupied? // todo: should be a check!
         // this.grid.get(gridEnd.row, gridEnd.col).occupied = true;

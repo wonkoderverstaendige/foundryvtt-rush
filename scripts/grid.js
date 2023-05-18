@@ -242,7 +242,7 @@ export default class Grid {
      * @returns {boolean}
      */
     valid(row, col) {
-        return !(row < 0 || row >= this.__nrows || col < 0 || col >= this.__nrows);
+        return !(row < 0 || row >= this.__nrows || col < 0 || col >= this.__ncols);
     }
 
     /**
