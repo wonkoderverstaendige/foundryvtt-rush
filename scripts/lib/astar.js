@@ -36,11 +36,17 @@ export default class AStar {
         this.start = this.grid.get(start.row, start.col);
         this.end = this.grid.get(end.row, end.col);
 
+        if (!this.start || !this.end) {
+            Rush.log(1, 'Invalid start or end position. Cancelling.');
+            return [];
+        }
+        console.log(`Rush | Searching from ${this.start.row},${this.start.col} to ${this.end.row}, ${this.end.col}.`);
+
         // choose our heuristic function
         const heuristicFun = this.heuristics[heuristic];
 
         this.start.h = heuristicFun(this.start, this.end);
-        console.log(`Rush | Searching from ${this.start.row},${this.start.col} to ${this.end.row}, ${this.end.col}.`);
+
 
         this.heap.push(this.start);
 
@@ -201,7 +207,7 @@ export default class AStar {
             previous = next;
         }
         simplePath.push(next);
-        Rush.debug(false, `Rush | Simplified path of length: ${simplePath.length}, ${currentTotal} ft.`);
+        Rush.debug(false, `Simplified path of length: ${simplePath.length}, ${currentTotal} ft.`);
         return [simplePath, currentTotal];
     }
 
@@ -212,8 +218,8 @@ export default class AStar {
     /**
      * Boring old manhattan distance, taking only cardinal direction moves into account.
      * On open maps can lead to very wide search.
-     * @param start
-     * @param end
+     * @param start Cell
+     * @param end Cell
      * @returns {number}
      */
     static manhattan(start, end) {
@@ -227,8 +233,8 @@ export default class AStar {
      * Equivalent of the 5/5/5 movement rule for dnd5e
      *
      * see http://theory.stanford.edu/~amitp/GameProgramming/Heuristics.html
-     * @param start
-     * @param end
+     * @param start Cell
+     * @param end Cell
      * @param D
      * @param D2
      */
@@ -242,8 +248,9 @@ export default class AStar {
     /**
      * Octile distance measure, diagonal moves count sqrt(2) times the cardinal directions.
      * This is an "approximation" for the dnd5e 5/10/5 movement rule, i.e. same as chebyshev
-     * @param start
-     * @param end
+     *
+     * @param start Cell
+     * @param end Cell
      * @param D
      * @param D2
      * @returns {number}
@@ -255,6 +262,13 @@ export default class AStar {
         return D * Math.max(dc, dr) + (D2 - D) * Math.min(dc, dr);
     }
 
+    /**
+     * Euclidean distance between two cells in grid-lengths.
+     *
+     * @param start Cell
+     * @param end Cell
+     * @returns {number} Distance in grid-square units
+     */
     static euclidean(start, end) {
         const dx = start.col - end.col;
         const dy = start.row - end.row;

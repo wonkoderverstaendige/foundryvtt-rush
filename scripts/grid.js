@@ -187,7 +187,6 @@ export default class Grid {
     constructor(rows, cols) {
         this.__nrows = Math.abs(rows);
         this.__ncols = Math.abs(cols);
-
         this.init();
     }
 
@@ -226,7 +225,7 @@ export default class Grid {
         // bail if out of bounds
         if (isNaN(row) || row < 0 || row >= this.__nrows) return;
         if (isNaN(col) || col < 0 || col >= this.__ncols) return;
-        if (!Array.isArray(this.__cells[row])) console.error('Rush | Cell array access violation.');  // when is this ever the case if bound_checked?
+        if (!Array.isArray(this.__cells[row])) Rush.log(0, 'Cell array access violation.');  // when is this ever the case if bound_checked?
         let cell = this.__cells[row][col];
         if (!cell) {
             cell = new Cell(this, row, col);
@@ -274,6 +273,7 @@ export default class Grid {
      * @param lazy Instantiate grid cells on demand.
      */
     init(lazy = true) {
+        this.dirty = false;
         this.__cells = [...Array(this.__nrows)].map(() => Array(this.__ncols));
 
         // do not instantiate the whole set of cells, do that on demand
@@ -292,6 +292,7 @@ export default class Grid {
      * map graph data, as we can't know what has changed. Hooks: ["onWallChange", "onWallCreate", "onWallDelete"]
      */
     reset() {
+        this.dirty = false;
         console.log('Rush | Resetting grid data.');
         this.forEach((cell) => {
             cell.probeNeighborhood();
@@ -301,7 +302,7 @@ export default class Grid {
 
     /**
      * Reset per-search data like weights or cost function intermediate values for all instantiated cells
-     * in the grid.
+     * in the grid. Leaves neighborhood data intact.
      */
     clean() {
         console.log('Rush | Cleaning grid data.');

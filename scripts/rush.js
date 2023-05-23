@@ -59,7 +59,7 @@ export const Rush = {
     },
 
     async moveSeeker(event) {
-        const tokens = canvas.tokens.controlled; //get("8spYRbXZV2afT389");
+        const tokens = canvas.tokens.controlled;
         const pos_canvas = lib.getPosOnCanvas();
 
         const animations = [];
@@ -107,8 +107,13 @@ export const Rush = {
                 this.grid.get(pos.row, pos.col).occupied = true;
             }
 
-            console.debug(`Rush | Start: ${gridStart.row}, ${gridStart.col} to ${gridEnd.row}, ${gridEnd.col}. Valid path: ${collision ? '❌' : '✔'}`);
+            this.debug(false, `Search start: ${gridStart.row}, ${gridStart.col} to ${gridEnd.row}, ${gridEnd.col}. Straight path valid: ${collision ? '❌' : '✔'}`);
             const path = Searcher.search(gridStart, gridEnd);
+            this.debug(false, `Found path: ${path.length ? '✔' : '❌'}`);
+            this.debug(false, path.length);
+
+            // Skip the token if no valid path could be obtained
+            if (!path.length) continue;
 
             // mark stop position as occupied so next in group don't run there
             const stop = path[path.length-1];

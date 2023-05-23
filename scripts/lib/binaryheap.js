@@ -1,9 +1,6 @@
 export default class BinaryHeap {
     /**
      * BinaryHeap implementation with ability to recalculate positions on score updates.
-     * As we minimize traversal costs, this is a MinHeap storing indices of the grid cells.
-     Sinking down here is moving towards the root of the tree.
-     Bubbling up here is moving towards the widest leaf layer.
      *
      * @param costfun function returning cell traversal cost from heuristic
      */
