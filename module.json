@@ -1,21 +1,37 @@
 {
   "id": "rush",
   "title": "Rush - Menacing Monster Mob Movement Module",
-  "description": "Menacingly Move Monstrous Mobs.",
+  "description": "Easily move groups of monsters towards a target along valid paths.",
   "authors": [
     {
-      "name": "wonko"
+      "name": "wonko",
+      "discord": "wonko#5436"
     }
   ],
-  "version": "0.0.1",
+  "version": "#{VERSION}#",
   "compatibility": {
-    "minimum": "9",
+    "minimum": "10",
     "verified": "10"
   },
   "esmodules": [
     "/scripts/module.js"
   ],
-  "url": "https://gitlab.com/reichler/rush",
-  "manifest": "https://gitlab.com/reichler/rush/releases/latest/download/module.json",
-  "download": "https://gitlab.com/reichler/rush/releases/latest/download/0.0.1/module.zip"
+  "scripts": [],
+  "styles": [],
+  "languages": [],
+  "relationships": {
+    "systems": [],
+    "requires": []
+  },
+  "url": "#{URL}#",
+  "manifest": "#{MANIFEST}#",
+  "download": "#{DOWNLOAD}#",
+  "license": "LICENSE",
+  "readme": "README.md",
+  "media": [
+    {
+      "type": "icon",
+      "url": "https://avatars.githubusercontent.com/u/673417?s=240&v=4"
+    }
+  ]
 }
