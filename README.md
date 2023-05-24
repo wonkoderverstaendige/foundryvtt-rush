@@ -2,6 +2,12 @@
 Move a group of tokens towards a target without fiddling with their paths.
 This module is intended for scenes with lots and lots of tokens where manual movement would be too tedious.
 
+
+
+https://github.com/wonkoderverstaendige/foundryvtt-rush/assets/673417/02dc5fbb-d177-4440-a976-cffe73277c61
+
+
+
 **NOTE** This is a _'I just need something quick for one session!'_ project. If it is useful to you, feedback and bug
 reports are welcome, but I do not intend to pour too much time into this at the moment.
 
