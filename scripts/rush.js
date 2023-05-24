@@ -1,7 +1,7 @@
 import Grid from "./grid.js";
 import * as lib from "./lib/lib.js";
 import AStar from "./lib/astar.js";
-import {posToGrid} from "./lib/lib.js";
+import {easeInOutCubic, posToGrid} from "./lib/lib.js";
 import CONSTANTS from "./constants.js";
 
 export const Rush = {
@@ -223,6 +223,7 @@ export const Rush = {
 
         Rush.debug(0, `DASH: ${dash}, ${totalDistance}`);
 
+        let step = 0;
         for (let position of simplePath) {
             // animate the token
             const targetCell = this.grid.get(position.row, position.col);
@@ -236,8 +237,10 @@ export const Rush = {
                 await token.document.update({hidden: false});
             }
             await token.document.update({x: targetPos.x - token.w / 2, y: targetPos.y - token.h / 2},
-                {animation: {duration: duration}});
-            await CanvasAnimation.getAnimation(token.animationName)?.promise;
+                {animation: {duration: duration, easing: dash ? 'easeInOutCubic' : 'easeInOutCosine'}});
+            const animation = CanvasAnimation.getAnimation(token.animationName);
+            await animation?.promise;
+            step++;
         }
     }
 }

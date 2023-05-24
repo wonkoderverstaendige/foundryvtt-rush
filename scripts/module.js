@@ -1,11 +1,13 @@
 import { Rush } from "./rush.js";
 import { RushSettings } from './ui/settings.js';
 import CONSTANTS from "./constants.js";
+import * as lib from "./lib/lib.js";
 
 Hooks.once('init', function () {
     window.Rush = Rush;
     window.RushConstants = CONSTANTS;
     Rush.patch();
+    CanvasAnimation.easeInOutCubic = lib.easeInOutCubic;
 });
 
 Hooks.once('devModeReady', ({ registerPackageDebugFlag }) => {

@@ -40,3 +40,14 @@ export function gridToPos(indices) {
     const y = canvas.scene.dimensions.sceneY + (indices.row+0.5) * canvas.scene.grid.size;
     return {x: x, y: y};
 }
+
+export function easeInOutCubic(x) {
+    // from https://easings.net
+    return x < 0.5 ? 4*x*x*x : 1-Math.pow(-2*x + 2, 3) / 2;
+}
+//
+// export function easeInOutCosine(x) {
+//     // from https://easings.net
+//     // Already part of foundry, but this way it's consistent
+//     return - (Math.cos(Math.PI * x) - 1) / 2;
+// }
