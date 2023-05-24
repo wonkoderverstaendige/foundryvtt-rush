@@ -228,18 +228,19 @@ export const Rush = {
             // animate the token
             const targetCell = this.grid.get(position.row, position.col);
             const targetPos = lib.snapPosToGrid(targetCell.center.x, targetCell.center.y);
-            const distance = Math.sqrt((token.x - targetPos.x)**2 + (token.y-targetPos.y)**2);
+            const distance = Math.sqrt((token.center.x - targetPos.x)**2 + (token.center.y-targetPos.y)**2);
+            if (distance <= 0) continue;
 
             const distanceSquares = distance/canvas.scene.grid.size; //*canvas.scene.grid.distance; <--feet
 
             const duration = 150 + distanceSquares * (1000/moveSpeed) * (dash ? dashAnimFactor: moveAnimFactor);
+            // console.log(`Step ${step}: ${duration.toFixed(0)} ms, ${distanceSquares.toFixed(2)}`);
             if (token.document.hidden) {
                 await token.document.update({hidden: false});
             }
             await token.document.update({x: targetPos.x - token.w / 2, y: targetPos.y - token.h / 2},
                 {animation: {duration: duration, easing: dash ? 'easeInOutCubic' : 'easeInOutCosine'}});
-            const animation = CanvasAnimation.getAnimation(token.animationName);
-            await animation?.promise;
+            await CanvasAnimation.getAnimation(token.animationName)?.promise;
             step++;
         }
     }
