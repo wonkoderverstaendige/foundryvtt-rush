@@ -1,6 +1,7 @@
 - [ ] lazy grid instantiation
   - lazy cell instantiation
   - create cell on demand
+- libwrapper shim
 
 - key-access BinaryHeap with recalculation/sinking
 - A-star

@@ -1,6 +1,6 @@
 {
   "id": "rush",
-  "title": "Rush - Menacing Monster Mob Movement Module",
+  "title": "Rush - Mob Movement",
   "description": "Easily move groups of monsters towards a target along valid paths.",
   "authors": [
     {
@@ -20,8 +20,12 @@
   "styles": [],
   "languages": [],
   "relationships": {
-    "systems": [],
-    "requires": []
+    "requires": [
+      {
+        "id": "lib-wrapper",
+        "type": "module"
+      }
+    ]
   },
   "url": "#{URL}#",
   "manifest": "#{MANIFEST}#",

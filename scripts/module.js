@@ -1,7 +1,11 @@
 import { Rush } from "./rush.js";
+import { RushSettings } from './ui/settings.js';
+import CONSTANTS from "./constants.js";
 
 Hooks.once('init', function () {
     window.Rush = Rush;
+    window.RushConstants = CONSTANTS;
+    Rush.patch();
 });
 
 Hooks.once('devModeReady', ({ registerPackageDebugFlag }) => {
@@ -10,16 +14,46 @@ Hooks.once('devModeReady', ({ registerPackageDebugFlag }) => {
 
 Hooks.on('ready', async function () {
     if (!game.user.isGM) return;
-    console.log('Rush | Begin Initialization...');
-    window.Rush.initialize();
 
-    // todo: don't trigger while on walls layer! Set to dirty, and reset on layer change
-    // set uncertain flag, then hook layer change and look at flag
-    Hooks.on('createWall', () => { window.Rush.grid.reset() });
-    Hooks.on('updateWall', () => { window.Rush.grid.reset() });
-    Hooks.on('deleteWall', () => { window.Rush.grid.reset() });
+    RushSettings.init();
 
-    // todo: reset all on scene change
-    // todo: check for active scene
+    // NOTE: Because we grid.wipe() on rush.moveSeeker() we can ignore all wall related updates for now
+
+/*    // wall changes on the WallsLayer deferred to not bog things down
+    // else we'll run into conflict with other modules that allow rapid wall changes
+    // outside of the WallsLayer, like placing templated map elements etc.
+    Hooks.on('createWall', wallChange);
+    Hooks.on('updateWall', wallChange);
+    Hooks.on('deleteWall', wallChange);
+
+    Hooks.on('deactivateWallsLayer', (wl) => {
+        if (window.Rush.grid.dirty) {
+            Rush.debug(0, `Grid is dirty! Full grid wipe!`);
+            window.Rush.grid.wipe();
+        } else {
+            Rush.debug(0, `Grid is clean.`);
+        }
+    })*/
 
 });
+
+Hooks.on('canvasReady', async function () {
+    console.log('Rush | Initialization...');
+    window.Rush.initialize();
+});
+
+
+
+// function wallChange() {
+//     if (canvas.walls.active) {
+//         // defer grid updates until we leave
+//         Rush.debug(0, `Defer wall change triggered grid wipe.`);
+//         window.Rush.grid.dirty = true;
+//     } else {
+//         // walls changed e.g. via door open, macro etc.
+//         window.Rush.grid.reset();
+//     }
+// }
+// function resetRush() {
+//     window.Rush.reset();
+// }

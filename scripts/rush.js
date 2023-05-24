@@ -2,33 +2,74 @@ import Grid from "./grid.js";
 import * as lib from "./lib/lib.js";
 import AStar from "./lib/astar.js";
 import {posToGrid} from "./lib/lib.js";
+import CONSTANTS from "./constants.js";
 
 export const Rush = {
     ID: 'rush',
     grid: undefined,
+    events: {},
+    gridTypeWarned: false,
 
     initialize() {
+        const validGrid = CONSTANTS.SUPPORTED_GRIDS.includes(canvas.grid.type)
+        if (!validGrid) {
+            if (!this.gridTypeWarned) {
+                ui.notifications.warn('Rush only supports square grids. Things might break!');
+                this.gridTypeWarned = true;
+            }
+        }
+
         this.__buildGrid();
 
-        window.addEventListener("mousedown", async (event) => {
-            if (!canvas.ready) return;
+        window.addEventListener("mousedown",async (event) => {
+            if (!(canvas.ready || canvas.tokens.active)) return;
+
             const hover = document.elementFromPoint(event.clientX, event.clientY);
             if (!hover || hover.id !== "board") return;
+            if (!( event.ctrlKey && event.shiftKey) ) return;
+            if (!canvas.tokens.controlled.length) return;
+
+            // only double clicks?
+            // if (event.detail < 2) return;
 
             const button = event.button;
-            if (!(button === 0 || button === 2)) return;
-            if (button === 0) {
 
-            }
-            if (button === 2) {
-                if (!( event.ctrlKey && event.shiftKey) ) return;
-                await this.moveSeeker(event);
-
+            // left or right clicks only
+            if (button === 0 || button === 2) {
+                await this.moveTokens(event);
             }
         });
 
         console.log('Rush | Initialized.');
         this.searchers = [];
+    },
+
+    /**
+     * Use libwrapper to patch the token click handler, allowing us with held modifiers (CTRL+SHIFT) to click at
+     * a grid cell target that is already occupied without including the clicked token into our selection.
+     */
+    patch() {
+        Rush.log(0, 'Patching!');
+        const tokenClick = (wrapped, ...args) => {
+            const [ event ] = args;
+            const originalEvent = event.data.originalEvent;
+            if (originalEvent.shiftKey && originalEvent.ctrlKey) {
+                Rush.debug(0, 'Overriding click on token!');
+            } else {
+                wrapped(...args);
+            }
+        };
+
+        if (game.modules.get('lib-wrapper')?.active) {
+            libWrapper.register('rush', 'Token.prototype._onClickLeft', tokenClick, 'MIXED');
+            libWrapper.register('rush', 'Token.prototype._onClickLeft2', tokenClick, 'MIXED');
+            libWrapper.register('rush', 'Token.prototype._onClickRight', tokenClick, 'MIXED');
+            libWrapper.register('rush', 'Token.prototype._onClickRight2', tokenClick, 'MIXED');
+        } else {
+            Rush.log(0, 'NO LIB-WRAPPER!');
+        }
+
+
     },
 
     log(force, ...args) {
@@ -58,12 +99,21 @@ export const Rush = {
         // this.grid.forAll(() => { });
     },
 
-    async moveSeeker(event) {
+    async moveTokens(event) {
         const tokens = canvas.tokens.controlled;
+        if (!(tokens || tokens.length)) return;
+
+        // Ignore distance limits on right click
+        // todo: pop up a configuration dialog for the move instead
+        // that offers a few defaults, and customization
+        const limitDistance = event.button === 0;  // on left click we move only as far as we can
+
         const pos_canvas = lib.getPosOnCanvas();
 
         const animations = [];
 
+        // start a new search
+        // because we wipe here, we don't need the listeners for the wall events!
         this.grid.wipe();
 
         // token target position
@@ -109,8 +159,7 @@ export const Rush = {
 
             this.debug(false, `Search start: ${gridStart.row}, ${gridStart.col} to ${gridEnd.row}, ${gridEnd.col}. Straight path valid: ${collision ? '❌' : '✔'}`);
             const path = Searcher.search(gridStart, gridEnd);
-            this.debug(false, `Found path: ${path.length ? '✔' : '❌'}`);
-            this.debug(false, path.length);
+            this.debug(false, `Found path: ${path.length ? `✔ with ${path.length} steps` : '❌'}`);
 
             // Skip the token if no valid path could be obtained
             if (!path.length) continue;
@@ -118,7 +167,7 @@ export const Rush = {
             // mark stop position as occupied so next in group don't run there
             const stop = path[path.length-1];
             stop.occupied = true;
-            animations.push(this.animate(token, path));
+            animations.push(this.animate(token, path, limitDistance));
         }
 
         let debug = game.modules.get('_dev-mode')?.api?.getPackageDebugValue(this.ID);
@@ -130,19 +179,33 @@ export const Rush = {
 
     },
 
-    async animate(token, path) {
+    async animate(token, path, limit=false) {
         // do some hand-waving for the speed.
         // check if walking speed, flying speed, burrow speed, take the maximum?
         // else use a 30 ft speed as default
         // todo: make speed part of popup dialog, i.e. move in pack or separate by speed
         const actor = token.actor;
-        const speeds = Object.values(actor.system.attributes.movement).filter((v) => typeof(v) == 'number')
-        const moveSpeed = Math.max(...speeds);
 
-        let [simplePath, totalDistance] = AStar.reducePath(path, 2 * moveSpeed);
-        const dash = totalDistance > moveSpeed;
-        console.log(`DASH: ${dash}, ${totalDistance}`);
-        console.log(simplePath);
+        const moveAnimFactor = game.settings.get('rush', 'move-animation-factor');
+        const dashAnimFactor = game.settings.get('rush', 'move-animation-factor');
+
+        let maxDistance = Infinity;
+        let moveSpeed = 30;
+
+        console.log(`Limiting: ${limit}`);
+        // are we using dnd5e?
+        if (game.system.id === 'dnd5e') {
+            const speeds = Object.values(actor.system.attributes.movement).filter((v) => typeof(v) == 'number')
+            moveSpeed = Math.max(...speeds);
+            maxDistance = limit ? 2 * moveSpeed : Infinity;
+        }
+
+        let [simplePath, totalDistance] = AStar.reducePath(path, maxDistance);
+
+        const doDash = game.settings.get('rush', 'do-dash');
+        const dash = doDash ? totalDistance > moveSpeed : false;
+
+        Rush.debug(0, `DASH: ${dash}, ${totalDistance}`);
 
         for (let position of simplePath) {
             // animate the token
@@ -150,10 +213,9 @@ export const Rush = {
             const targetPos = lib.snapPosToGrid(targetCell.center.x, targetCell.center.y);
             const distance = Math.sqrt((token.x - targetPos.x)**2 + (token.y-targetPos.y)**2);
 
-            // todo: base animation on distance in feet, or generic squares? Must look nice, not be "realistic"
-            const distanceSquares = distance/canvas.scene.grid.size //*canvas.scene.grid.distance; <--feet
+            const distanceSquares = distance/canvas.scene.grid.size; //*canvas.scene.grid.distance; <--feet
 
-            const duration = 150 + distanceSquares * moveSpeed * (dash ? 4: 8); // ms/square
+            const duration = 150 + distanceSquares * (1000/moveSpeed) * (dash ? dashAnimFactor: moveAnimFactor);
             if (token.document.hidden) {
                 await token.document.update({hidden: false});
             }
