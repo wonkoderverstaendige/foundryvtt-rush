@@ -5,7 +5,7 @@ export default class BinaryHeap {
      * @param costfun function returning cell traversal cost from heuristic
      */
     constructor(costfun) {
-        console.log('Rush | A* new Binary Heap');
+        Rush.debug(0, 'New Binary Heap');
         this.costfun = costfun;
         this.__heap = [];
     }
@@ -15,10 +15,7 @@ export default class BinaryHeap {
      * @param element Element to add
      */
     push(element) {
-        if (this.__heap.indexOf(element) >= 0) {
-            console.log('Rush | Pushed node exists. Skipping.')
-            return;
-        }
+        if (this.__heap.indexOf(element) >= 0) return;
         this.__heap.push(element);
         this.sinkDown(this.__heap.length - 1);
     }
@@ -47,16 +44,13 @@ export default class BinaryHeap {
             console.error('Rush | Node to be removed not in heap. Skipping.');
             return;
         }
-        // console.log(`Before removal: ${this.__heap.length}, index=${index}`);
         const end = this.__heap.pop();
-        // console.log(`After removal: ${this.__heap.length}`);
+
         if (index !== this.__heap.length) {  // in original implementation was `this.__heap.length - 1
             this.__heap[index] = end;
             if (this.costfun(end) < this.costfun(node)) {
-                // console.log('Sinking Down');
                 this.sinkDown(index);
             } else {
-                // console.log('Bubbling Up');
                 this.bubbleUp(index);
             }
         }

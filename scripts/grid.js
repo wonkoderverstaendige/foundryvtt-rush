@@ -293,7 +293,7 @@ export default class Grid {
      */
     reset() {
         this.dirty = false;
-        console.log('Rush | Resetting grid data.');
+        Rush.debug(0, 'Resetting grid data.');
         this.forEach((cell) => {
             cell.probeNeighborhood();
             cell.clean();
@@ -305,7 +305,7 @@ export default class Grid {
      * in the grid. Leaves neighborhood data intact.
      */
     clean() {
-        console.log('Rush | Cleaning grid data.');
+        Rush.debug(0, 'Cleaning grid data.');
         this.forEach((cell) => {
             cell.clean();
         })
@@ -315,7 +315,7 @@ export default class Grid {
      * Resetting all grid data, including per-search and between-search values for all instantiated cells
      */
     wipe() {
-        console.log('Rush | Wiping grid data.');
+        Rush.debug(0, 'Wiping grid data.');
         this.forEach((cell) => {
             cell.wipe();
         })

@@ -40,7 +40,7 @@ export const Rush = {
             }
         });
 
-        console.log('Rush | Initialized.');
+        Rush.debug(0, 'Initialized.');
         this.searchers = [];
     },
 
@@ -87,12 +87,12 @@ export const Rush = {
     },
 
     __buildGrid() {
-        console.log(`Rush | Creating Grid`);
+        Rush.debug(0, `Creating Grid`);
         // we are ignoring the outer grid spaces that aren't complete. For now, at least.
         const rows = Math.floor(canvas.scene.dimensions.sceneHeight / canvas.scene.grid.size);
         const cols = Math.floor(canvas.scene.dimensions.sceneWidth / canvas.scene.grid.size);
 
-        console.log(`Rush | Mapsize ${rows} x ${cols}`)
+        Rush.debug(0, `Mapsize ${rows} x ${cols}`)
         this.grid = new Grid(rows, cols);
 
         // DEBUG ONLY: Instantiate all cells. Disable! Very heavy on big maps.
@@ -124,8 +124,8 @@ export const Rush = {
             y: target_token_pos.y + canvas.scene.grid.size / 2
         }
 
-        console.log(`Rush | Target Pos: ${target_token_pos.x}, ${target_token_pos.y}`);
-        console.log(`Rush | Target Center Pos: ${target_center_pos.x}, ${target_center_pos.y}`);
+        Rush.debug(0, `Target Pos: ${target_token_pos.x}, ${target_token_pos.y}`);
+        Rush.debug(0, `Target Center Pos: ${target_center_pos.x}, ${target_center_pos.y}`);
 
         const gridEnd = lib.posToGrid(pos_canvas.x, pos_canvas.y);
 
@@ -192,7 +192,6 @@ export const Rush = {
         let maxDistance = Infinity;
         let moveSpeed = 30;
 
-        console.log(`Limiting: ${limit}`);
         // are we using dnd5e?
         if (game.system.id === 'dnd5e') {
             const speeds = Object.values(actor.system.attributes.movement).filter((v) => typeof(v) == 'number')

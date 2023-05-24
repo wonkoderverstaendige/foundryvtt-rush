@@ -9,7 +9,7 @@ export default class AStar {
      * @param {Function} [options.heuristic] Optional alternative heuristic function
      */
     constructor(grid, options = {}) {
-        console.log('Rush | Initiating A* Search');
+        Rush.debug(0, 'Initiating A* Search');
         this.options = options;
         this.grid = grid;
         this.heuristics = {
@@ -40,7 +40,7 @@ export default class AStar {
             Rush.log(1, 'Invalid start or end position. Cancelling.');
             return [];
         }
-        console.log(`Rush | Searching from ${this.start.row},${this.start.col} to ${this.end.row}, ${this.end.col}.`);
+        Rush.debug(0, `Searching from ${this.start.row},${this.start.col} to ${this.end.row}, ${this.end.col}.`);
 
         // choose our heuristic function
         const heuristicFun = this.heuristics[heuristic];
@@ -62,7 +62,7 @@ export default class AStar {
             // termination test for complete path
             if (currentNode === this.end) {
                 // console.log(`Rush | Current cell is end. Completed path.`);
-                console.log(`Rush | Search terminated after ${step} steps at End.`)
+                Rush.debug(0, `Search terminated after ${step} steps at End.`)
                 return this.pathFrom(currentNode);
             }
 
@@ -115,7 +115,7 @@ export default class AStar {
             });
         }
 
-        console.log(`Rush | Search terminated after ${step} steps at closest.`)
+        Rush.debug(0, `Search terminated after ${step} steps at closest.`)
         if (closeIn) {
             return this.pathFrom(closestNode);
         }
