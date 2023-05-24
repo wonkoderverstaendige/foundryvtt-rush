@@ -124,7 +124,7 @@ export default class AStar {
 
     /**
      * Given chaining list of cells, build the path and return in start->end order.
-     * As the path contains all cells, the resulting animation would be very stuttering. We want to optionall
+     * As the path contains all cells, the resulting animation would be very stuttering. We want to optional
      * combine cells that are within LOS into a single move.
      * @param cell
      * @param simplify
@@ -192,8 +192,9 @@ export default class AStar {
             // } else {
             //     Rush.debug(false, `Cell ${next.row}, ${next.col} not Occupied!`);
             // }
-            const ray = new Ray(current.center, next.center);
-            const collides = canvas.walls.checkCollision(ray, {type: 'move', mode: 'any'});
+            // const ray = new Ray(current.center, next.center);
+            //const collides = Rush.checkCollision(current.center, next.center, {type: 'move', mode: 'any'});
+            const collides = Rush.testCollision(current.center, next.center, {type: 'move', mode: 'any'});
             if (next.occupied || collides) {
                 if (!path.length) {
                     // last item on list. Double check collision, else append.

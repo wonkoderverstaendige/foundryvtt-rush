@@ -11,6 +11,14 @@ export const Rush = {
     gridTypeWarned: false,
 
     initialize() {
+        let cls;
+        if (game.release.generation >= 11) {
+            cls = CONFIG.Canvas.polygonBackends["move"];
+        } else {
+            cls = CONFIG.Canvas.losBackend;
+        }
+        this.testCollision = cls.testCollision.bind(cls);
+
         const validGrid = CONSTANTS.SUPPORTED_GRIDS.includes(canvas.grid.type)
         if (!validGrid) {
             if (!this.gridTypeWarned) {
@@ -21,31 +29,38 @@ export const Rush = {
 
         this.__buildGrid();
 
-        window.addEventListener("mousedown",async (event) => {
-            if (!(canvas.ready || canvas.tokens.active)) return;
-
-            const hover = document.elementFromPoint(event.clientX, event.clientY);
-            if (!hover || hover.id !== "board") return;
-            if (!( event.ctrlKey && event.shiftKey) ) return;
-            if (!canvas.tokens.controlled.length) return;
-
-            // only double clicks?
-            // if (event.detail < 2) return;
-
-            const button = event.button;
-
-            // left or right clicks only
-            if (button === 0 || button === 2) {
-                await this.moveTokens(event);
-            }
-        });
-
+        window.addEventListener('mousedown', this.pointerEvent.bind(this))
         Rush.debug(0, 'Initialized.');
         this.searchers = [];
     },
 
+
+    async pointerEvent(event) {
+        if (!(canvas.ready || canvas.tokens.active)) return;
+
+        const hover = document.elementFromPoint(event.clientX, event.clientY);
+        if (!hover || hover.id !== "board") return;
+        if (!( event.ctrlKey && event.shiftKey) ) return;
+        if (!canvas.tokens.controlled.length) return;
+
+        // only double clicks?
+        // if (event.detail < 2) return;
+        event.preventDefault();
+
+        const button = event.button;
+
+        // left or right clicks only
+        if (button === 0 || button === 2) {
+            const tokens = canvas.tokens.controlled;
+            const limitDistance = event.button === 0;  // on left click we move only as far as we can
+
+            const target = lib.getPosOnCanvas();
+
+            await this.moveTokens(tokens, target, limitDistance);
+        }
+    },
     /**
-     * Use libwrapper to patch the token click handler, allowing us with held modifiers (CTRL+SHIFT) to click at
+     * Use libWrapper to patch the token click handler, allowing us with held modifiers (CTRL+SHIFT) to click at
      * a grid cell target that is already occupied without including the clicked token into our selection.
      */
     patch() {
@@ -99,17 +114,13 @@ export const Rush = {
         // this.grid.forAll(() => { });
     },
 
-    async moveTokens(event) {
-        const tokens = canvas.tokens.controlled;
+    async moveTokens(tokens, target, limitDistance=false) {
         if (!(tokens || tokens.length)) return;
 
-        // Ignore distance limits on right click
         // todo: pop up a configuration dialog for the move instead
         // that offers a few defaults, and customization
-        const limitDistance = event.button === 0;  // on left click we move only as far as we can
-
-        const pos_canvas = lib.getPosOnCanvas();
-
+        // const pos_canvas = lib.getPosOnCanvas();
+        const pos_canvas = target;
         const animations = [];
 
         // start a new search
@@ -203,6 +214,12 @@ export const Rush = {
 
         const doDash = game.settings.get('rush', 'do-dash');
         const dash = doDash ? totalDistance > moveSpeed : false;
+
+        // todo: how to handle actors with 0 speed? Cancel or do slowly?
+        if (moveSpeed <= 0) return;
+        // moveSpeed = Math.max(5, moveSpeed);
+
+        moveSpeed = Math.min(500, moveSpeed);
 
         Rush.debug(0, `DASH: ${dash}, ${totalDistance}`);
 

@@ -21,7 +21,7 @@ Hooks.on('ready', async function () {
 
 /*    // wall changes on the WallsLayer deferred to not bog things down
     // else we'll run into conflict with other modules that allow rapid wall changes
-    // outside of the WallsLayer, like placing templated map elements etc.
+    // outside the WallsLayer, like placing templated map elements etc.
     Hooks.on('createWall', wallChange);
     Hooks.on('updateWall', wallChange);
     Hooks.on('deleteWall', wallChange);

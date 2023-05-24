@@ -1,12 +1,14 @@
 /**
  * Get coordinates of mouse cursor event on the canvas, in {x, y} canvas coordinates.
- * @param snap
- * @returns {*}
+ * @returns {x, y}
  */
-export function getPosOnCanvas(snap=false) {
-    // hoisted shamelessly from Sequencer
-    const pos = canvas.app.renderer.plugins.interaction.mouse.getLocalPosition( canvas.app.stage );
-    return pos;
+export function getPosOnCanvas() {
+    // with help by Wasp & Zhell
+    if (game.release.generation >= 11) {
+        return canvas.app.renderer.plugins.interaction.pointer.getLocalPosition(canvas.app.stage);
+    } else {
+        return canvas.app.renderer.plugins.interaction.mouse.getLocalPosition(canvas.app.stage);
+    }
 }
 
 /**
