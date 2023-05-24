@@ -1,12 +1,14 @@
 /**
  * Get coordinates of mouse cursor event on the canvas, in {x, y} canvas coordinates.
- * @param snap
- * @returns {*}
+ * @returns {x, y}
  */
-export function getPosOnCanvas(snap=false) {
-    // hoisted shamelessly from Sequencer
-    const pos = canvas.app.renderer.plugins.interaction.mouse.getLocalPosition( canvas.app.stage );
-    return pos;
+export function getPosOnCanvas() {
+    // with help by Wasp & Zhell
+    if (game.release.generation >= 11) {
+        return canvas.app.renderer.plugins.interaction.pointer.getLocalPosition(canvas.app.stage);
+    } else {
+        return canvas.app.renderer.plugins.interaction.mouse.getLocalPosition(canvas.app.stage);
+    }
 }
 
 /**
@@ -38,3 +40,14 @@ export function gridToPos(indices) {
     const y = canvas.scene.dimensions.sceneY + (indices.row+0.5) * canvas.scene.grid.size;
     return {x: x, y: y};
 }
+
+export function easeInOutCubic(x) {
+    // from https://easings.net
+    return x < 0.5 ? 4*x*x*x : 1-Math.pow(-2*x + 2, 3) / 2;
+}
+//
+// export function easeInOutCosine(x) {
+//     // from https://easings.net
+//     // Already part of foundry, but this way it's consistent
+//     return - (Math.cos(Math.PI * x) - 1) / 2;
+// }

@@ -79,8 +79,9 @@ class Cell {
                 //     const sy = canvas.scene.dimensions.sceneY;
                 //     console.log(`Rush | ${this.center.x-sx}, ${this.center.y-sy} -> ${neighborLoc.x-sx}, ${neighborLoc.y-sy}`);
                 // }
-                const ray = new Ray(this.center, neighborLoc);
-                const collision = canvas.walls.checkCollision(ray, {type: 'move', mode: 'any'});
+                // const ray = new Ray(this.center, neighborLoc);
+                //const collision = canvas.walls.checkCollision(ray, {type: 'move', mode: 'any'});
+                const collision = Rush.testCollision(this.center, neighborLoc, {type: 'move', mode: 'any'});
                 if (!collision) {
                     this.__neighbors.push(neighborLoc);
                 }
@@ -104,13 +105,14 @@ class Cell {
         this.gfx = new PIXI.Graphics();
         this.gfx.x = canvas.scene.dimensions.sceneX + this.col * gs;
         this.gfx.y = canvas.scene.dimensions.sceneY + this.row * gs;
-        canvas.stage.addChild(this.gfx);
+        // canvas.stage.addChild(this.gfx);
+        canvas.grid.addChild(this.gfx);
 
         this.label = new PIXI.Text(`${this.row},${this.col}`, CONSTANTS.LABEL_LOC_STYLE);
         this.label.resolution = 2;
         this.label.x = this.gfx.x + gs*0.30;
         this.label.y = this.gfx.y + gs*0.30;
-        canvas.stage.addChild(this.label);
+        canvas.grid.addChild(this.label);
     }
 
     /**
@@ -118,11 +120,11 @@ class Cell {
      * Must be done if the cell is destroyed or the graphics are orphaned behind.
      */
     erase() {
-        canvas.stage.removeChild(this.gfx);
+        canvas.grid.removeChild(this.gfx);
         this.gfx.destroy();
         this.gfx = undefined;
 
-        canvas.stage.removeChild(this.label);
+        canvas.grid.removeChild(this.label);
         this.label.destroy();
         this.label = undefined;
 
@@ -142,7 +144,7 @@ class Cell {
         if (this.occupied) color += 0x00ff00;
         if (this.onPath) {
             color = 0x0000ff;
-            let alpha = 0.5;
+            alpha = 0.5;
         }
 
 
@@ -166,13 +168,10 @@ class Cell {
             this.gfx.lineStyle({width: 2, color: 0x0000ff, alpha: 0.2});
             const drow = this.row - neighbor.row;
             const dcol = this.col - neighbor.col;
-            // console.log(`Rush | Connectivity Marker with drow=${drow}, dcol=${dcol}`);
+
             this.gfx.moveTo(mid - dcol * gs * 0.1, mid - drow * gs * 0.1);
             this.gfx.lineTo(mid - dcol * gs * 0.5, mid - drow * gs * 0.5);
 
-            // this.gfx.lineTo(gs/2 - drow * gs * 0.1, gs/2 - drow * gs * 0.4);
-            // this.gfx.lineTo(gs/2 + drow * gs * 0.1, gs/2 - drow * gs * 0.4);
-            // this.gfx.lineTo(gs/2 - drow * gs * 0.1, gs/2 - drow * gs * 0.4);
             this.gfx.endFill();
         }
     }
