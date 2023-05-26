@@ -58,7 +58,7 @@ Hooks.on('deleteCombat', async (combat) => {
 
 async function clearDashStatuses(combat) {
     if (!game.user.isGM) return;
-
+    if (!(game.settings.get('rush', 'mark-dash'))) return;
 
     // todo: beware combats on other scenes
     if (canvas.scene.id !== combat._source.scene) return;

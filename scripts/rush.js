@@ -225,9 +225,12 @@ export const Rush = {
 
         Rush.debug(0, `DASH: ${dash}, ${totalDistance}`);
         const hasDash = !!token.actor.effects.find(e => e.label === effect.label);
-        if (dash !== hasDash) {
-            token.toggleEffect(effect);
+        if (game.settings.get('rush', 'mark-dash')) {
+            if (dash !== hasDash) {
+                token.toggleEffect(effect);
+            }
         }
+
 
         let step = 0;
         for (let position of simplePath) {
