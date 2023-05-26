@@ -15,6 +15,8 @@
   - MATT
   - Drag Ruler
 - [ ] move speed from popular systems other than dnd5e
+  - set status effect (if combat?)
+  - remove on turn change or new move command
 
 # UI
 - [ ] indicate which tokens have dashed this turn

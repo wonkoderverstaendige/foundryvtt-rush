@@ -197,6 +197,8 @@ export const Rush = {
         // todo: make speed part of popup dialog, i.e. move in pack or separate by speed
         const actor = token.actor;
 
+        const effect = CONSTANTS.RUSH_EFFECT;
+
         const moveAnimFactor = game.settings.get('rush', 'move-animation-factor');
         const dashAnimFactor = game.settings.get('rush', 'move-animation-factor');
 
@@ -222,6 +224,10 @@ export const Rush = {
         moveSpeed = Math.min(500, moveSpeed);
 
         Rush.debug(0, `DASH: ${dash}, ${totalDistance}`);
+        const hasDash = !!token.actor.effects.find(e => e.label === effect.label);
+        if (dash !== hasDash) {
+            token.toggleEffect(effect);
+        }
 
         let step = 0;
         for (let position of simplePath) {
